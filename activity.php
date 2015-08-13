@@ -2,9 +2,9 @@
 
 // include configuration file
 include('config.php');
-	
+include('dblogin.php');	
 // connect to the database
-$db = mysqli_connect ($db_host, $db_user, $db_password, $db_name) OR die ('Could not connect to MySQL: ' . mysqli_connect_error());
+// $db = mysqli_connect ($db_host, $db_user, $db_password, $db_name) OR die ('Could not connect to MySQL: ' . mysqli_connect_error());
 
 // continue session
 session_start();
@@ -122,7 +122,7 @@ if(!$_SESSION['user_id'])
 			while ($row = mysqli_fetch_assoc($result)) 
 			{
 				// get user information
-				$sql2 = "SELECT user_id, firstname, lastname FROM users WHERE user_id = '{$row['user_id']}'";
+				$sql2 = "SELECT user_id, username FROM users WHERE user_id = '{$row['user_id']}'";
 				$result2 = mysqli_query($db, $sql2);
 				$row2 = mysqli_fetch_assoc($result2);
 			
@@ -159,7 +159,7 @@ if(!$_SESSION['user_id'])
 				}
 				
 				// display name and shout
-				echo "<p><strong>{$row2['firstname']} {$row2['lastname']} writes:</strong></p>";
+				echo "<p><strong>{$row2['username']} writes:</strong></p>";
 				echo "<p>{$row['shout']}</p>";
 				echo "<span style=\"color: #666\">{$row['formatted_date']}<span>";
 				echo "</div>";

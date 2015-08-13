@@ -2,12 +2,13 @@
 
 // include configuration file
 include('config.php');
+include('dblogin.php');
 
 // Include SimpleImage library (https://github.com/claviska/SimpleImage)
 include('abeautifulsite/SimpleImage.php');
 	
 // connect to the database
-$db = mysqli_connect ($db_host, $db_user, $db_password, $db_name) OR die ('Could not connect to MySQL: ' . mysqli_connect_error());
+// $db = mysqli_connect ($db_host, $db_user, $db_password, $db_name) OR die ('Could not connect to MySQL: ' . mysqli_connect_error());
 
 // continue session
 session_start();
@@ -26,20 +27,13 @@ if(isset($_POST['submit']))
 	$error = array();
 	
 	// Check for a firstname
-	if(empty($_POST['firstname']))
+	if(empty($_POST['username']))
 	{
-		$error['firstname'] = 'Required field';
+		$error['username'] = 'Required field';
 	} else {
-		$firstname = $_POST['firstname'];
+		$firstname = $_POST['username'];
 	}
-	
-	// Check for a lastname
-	if(empty($_POST['lastname']))
-	{
-		$error['lastname'] = 'Required field';
-	} else {
-		$lastname = $_POST['lastname'];
-	}
+
 	
 	// Check for a email
 	if(empty($_POST['email']))
@@ -87,8 +81,7 @@ if(isset($_POST['submit']))
 	{
 		// edit user information in the users table
 		$query = "update users set 
-						firstname = '{$_POST['firstname']}', 
-						lastname = '{$_POST['lastname']}',  
+						username = '{$_POST['username']}', 
 						email = '{$_POST['email']}'
 				 	where
 				 		user_id = '{$_SESSION['user_id']}'";
@@ -124,13 +117,12 @@ if(isset($_POST['submit']))
 } else {
 
 	// Get user information
-	$query = "SELECT firstname, lastname, email FROM users WHERE user_id = '{$_SESSION['user_id']}'";
+	$query = "SELECT username, email FROM users WHERE user_id = '{$_SESSION['user_id']}'";
 	$result = mysqli_query($db, $query);
 	$row = mysqli_fetch_assoc($result);
 	
 	// Assign user information to template
-	$firstname = $row['firstname'];
-	$lastname = $row['lastname'];
+	$firstname = $row['username'];
 	$email = $row['email'];
 	$biography = $row['biography'];
 	
@@ -165,7 +157,7 @@ if(isset($_POST['submit']))
 		<!-- content -->	
 		<div class="container" style="margin-top: 65px">
 
-			<h2><?php echo "{$_SESSION['firstname']} {$_SESSION['lastname']}"; ?></h2>
+			<h2><?php echo "{$_SESSION['username']}"; ?></h2>
 			
 			<?php
 				
@@ -210,19 +202,13 @@ if(isset($_POST['submit']))
 					<!-- edit profile form -->
 					<form method="post" enctype="multipart/form-data" action="profile.php">
 						
-						<!-- first name -->
+						<!-- Username -->
 						<div class="form-group">
-							<label>First Name</label>
+							<label>Username</label>
 							<input name="firstname" type="text" value="<?php echo $firstname; ?>" autocomplete="off" class="form-control" />
 							<span class="text-danger"><?php echo $error['firstname']; ?></span>
 						</div>
-						
-						<!-- last name -->
-						<div class="form-group">
-							<label>Last Name</label>
-							<input name="lastname" type="text" value="<?php echo $lastname; ?>" autocomplete="off" class="form-control" />
-							<span class="text-danger"><?php echo $error['lastname']; ?></span>
-						</div>
+
 						
 						<!-- email -->
 						<div class="form-group">

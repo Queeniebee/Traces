@@ -4,7 +4,7 @@
 include('config.php');
 include('dblogin.php');
 // connect to the database
-$db = mysqli_connect ($db_host, $db_user, $db_password, $db_name) OR die ('Could not connect to MySQL: ' . mysqli_connect_error());
+// $db = mysqli_connect ($db_host, $db_user, $db_password, $db_name) OR die ('Could not connect to MySQL: ' . mysqli_connect_error());
 
 // continue session
 session_start();
@@ -33,8 +33,7 @@ if(isset($_POST['submit']))
 		// get user_id from the users table
 		$sql = "SELECT 
 					user_id, 
-					firstname, 
-					lastname 
+					username
 				FROM 
 					users 
 				WHERE 
@@ -55,8 +54,7 @@ if(isset($_POST['submit']))
 	{
 		// append user variables to session
 		$_SESSION['user_id'] = $row['user_id'];
-		$_SESSION['firstname'] = $row['firstname'];
-		$_SESSION['lastname'] = $row['lastname'];
+		$_SESSION['username'] = $row['username'];
 		
 		// redirect user to profile page
 		header("Location: activity.php");
@@ -69,18 +67,21 @@ if(isset($_POST['submit']))
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>Shoutbox</title>
+		<title>T - R - A - C - E - S</title>
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<!-- jQuery -->
-		<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
-
-		<!-- bootstrap -->
-		<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
-		<link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">	
-
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+		<link href='http://fonts.googleapis.com/css?family=Oswald:400,300,700' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" href="assets/css/screen.css">		
+		<style type="text/css">
+			.profileimage {
+				border: 1px solid #ccc; 
+				width: 100%;
+			}
+		</style>				
 	</head>
 	<body>
 		
