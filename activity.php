@@ -1,10 +1,9 @@
 <?php
 
 // include configuration file
+// connect to the database
 include('config.php');
 include('dblogin.php');	
-// connect to the database
-// $db = mysqli_connect ($db_host, $db_user, $db_password, $db_name) OR die ('Could not connect to MySQL: ' . mysqli_connect_error());
 
 // continue session
 session_start();

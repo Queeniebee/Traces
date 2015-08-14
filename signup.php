@@ -1,108 +1,91 @@
 <?php
-
-// include configuration file
-include('config.php');
-include('dblogin.php');
-
+include ('config.php');
+include ('dblogin.php');
 // continue session
 session_start();
-// create an empty error array
-$error = array();
+
+$error = ['username' => '', 'email' => '', 'userpass' => '', 'hp' => '', 'token' => ''];
+$username ='';
+$email = '';
+$new_member = true;
 
 // if the form has been submitted
-if ('POST' === $_SERVER['REQUEST_METHOD'])
-{
-
-    if ($token !== $_SESSION['token'])
-    {
-        $errors['token'] = "Form submission is invalid.";
-    }
-    if (!empty($pot))
-    {
-        $errors['hp'] = "Form submission is invalid.";
-    }
+if ('POST' === $_SERVER['REQUEST_METHOD']) {
+	
+	$userName = isset($_POST['username']) ? $_POST['username'] : '';
+	$email = isset($_POST['email']) ? $_POST['email'] : '';
+	//running PHP that is too low for password_hash();
+	$userpass = sha1($_POST['userpass']);	
+	$token = isset($_POST['token']) ? $_POST['token']: '';
+	
+	// if ($token !== $_SESSION['token']) {
+	if (!$token) {
+		$error['token'] = "Form submission is invalid.";
+	}
+	if (!empty($pot)) {
+		$error['hp'] = "Form submission is invalid.";
+	}
 
 	// check for a username
-	if(empty($_POST['username']))
-	{
+	if (empty($username)) {
 		$error['username'] = 'Required field';
-	} 
-
+	}
 	// check for an email
-	if(empty($_POST['email']))
-	{
+	if (empty($email)) {
 		$error['email'] = 'Required field';
-	} else if (!empty($_POST['email'])){
-	
+	} else {
 		// check to see if email address is unique
-		$sql = "SELECT user_id FROM users WHERE email = '{$_POST['email']}'";
-		$result = mysqli_query($db, $sql);
-		var_dump($result);
-
-		if(mysqli_num_rows($result) > 0)
-		{
-			$error['email'] = 'You already have an account';
+		$check = $dbConnect -> prepare('SELECT user_id FROM users WHERE email = :email');
+		$check -> bindParam(':email', $email, PDO::PARAM_INT);
+		$result = $check -> fetch(PDO::FETCH_ASSOC);
+		// var_dump($result);
+		$check -> execute();
+  		if(!$check->execute()) {
+			echo "sql failed";
+		}		
+		
+		$result = $check -> fetch(PDO::FETCH_ASSOC);
+		if ($result) {
+			$error['email'] = 'An account exists with this email address';
 		}
 	}
-	
 	// check for a password
-	if(empty($_POST['userpass']))
-	{
+	if (empty($userpass)) {
 		$error['userpass'] = 'Required field';
-	} 
-	
-	// if there are no errors
-	if(sizeof($error) == 0){
+	}
+	if ($error['email'] == '') {
 
-        $username = $_POST['username'];
-        $email    = $_POST['email'];
+		if (isset($_SESSION["token"]) && isset($token)) {
+			printf('what what');
+			if ($token == $_SESSION["token"]) {
+				printf('nopenope');
+				$new_member = false;
 
-		$_SESSION['trc'] = array();	
+			}
+		} else {
+		}
+		if ($new_member) {
+			$_SESSION['token'] = $token;
+			// $token = $_SESSION['token'];
 
-		// insert user into the users table
-		$sql = "INSERT INTO users (
-					user_id, 
-					username, 
-					email, 
-					userpass,
-					signupdate
-				) VALUES (
-					null,
-					'{$username}',
-					'{$email}',
-					sha1('{$_POST['userpass']}'),
-					NOW()
-					)";
+			// insert user into the users table
+			$check = $dbConnect -> prepare('INSERT INTO users (username, email, userpass, signupdate) VALUES (:username, :email, :userpass, NOW())');
+			$check -> execute(array(':username' => $username, ':email' => $email, ':userpass' => $userpass));
+			$userid = $dbConnect -> lastInsertId();
+			echo $userid;
 
-		$result = mysqli_query($db, $sql);
-		
-		// obtain user_id from table
-		$user_id = mysqli_insert_id($db);
-		
+			// append user_id to session array
+			$_SESSION['user_id'] = $userid;
+			$_SESSION['username'] = $username;
+			$_SESSION['email'] = $email;
+			// $_SESSION['error'] = $error;
 
-		// append user_id to session array
-		$_SESSION['trc']['user_id'] = $user_id;
+			header("Location: activity.php");
+			exit ;
 
-		$_SESSION['trc']['username'] = $username;
-		$_SESSION['trc']['email']    = $email;
-		$_SESSION['trc']['error']    = $_POST['error'];	
-
-		header("Location: activity.php");
-		exit;
-				
-	} 
+		}
+	}
 }
-    else if(isset($_SESSION['trc']) && is_array($_SESSION['trc']))
-    {
-        $username = $_SESSION['trc']['username'];
-        $email    = $_SESSION['trc']['email'];
-        $error   = $_SESSION['trc']['error'];
-		
-}
-
-$_SESSION['token'] = md5(uniqid(rand(), true));
-
-
 ?>
 <!DOCTYPE html>
 <html>
@@ -118,7 +101,7 @@ $_SESSION['token'] = md5(uniqid(rand(), true));
 		<link rel="stylesheet" href="assets/css/screen.css">		
 		<style type="text/css">
 			.profileimage {
-				border: 1px solid #ccc; 
+				border: 1px solid #ccc;
 				width: 100%;
 			}
 		</style>				
@@ -126,8 +109,18 @@ $_SESSION['token'] = md5(uniqid(rand(), true));
 	<body>
 		
 		<!-- top navigation -->
-		<?php include('topnavigation.php'); ?>
-		
+	<div class="navbar navbar-inverse navbar-fixed-top">
+	<div class="container">
+		<div class="navbar-header">
+			<ul class="nav navbar-nav">
+				<?php
+				echo "<li><a href=\"index.php\">Sign In</a></li>";
+				echo "<li><a href=\"signup.php\">Sign Up</a></li>";
+ ?>
+			</ul>
+		</div>
+	</div>
+</div>
 		<!-- content -->	
 		<div class="container" style="margin-top: 65px">
 		
@@ -136,20 +129,20 @@ $_SESSION['token'] = md5(uniqid(rand(), true));
 			<!-- signup form -->
 			<form method="post" action="signup.php">
 				
-				<!-- first name -->
 				<div class="form-group">
 					<label>Username</label>
-					<input name="username" type="text" value="<?php echo $_POST['username']; ?>" class="form-control" />
+					<!-- <input name="username" type="text" value="<?php echo $_POST['username']; ?>" class="form-control" /> -->
+					<input name="username" type="text" value="<?php echo htmlspecialchars($username, ENT_QUOTES); ?>" class="form-control" />
+					
 					<span class="text-danger"><?php echo $error['username']; ?></span>
 				</div>
-				<!-- e-mail -->
+				
 				<div class="form-group">
 					<label>E-mail</label>
-					<input name="email" type="text" value="<?php echo $_POST['email']; ?>" class="form-control" />
+					<input name="email" type="text" value="<?php echo htmlspecialchars($username, ENT_QUOTES); ?>" class="form-control" />
 					<span class="text-danger"><?php echo $error['email']; ?></span>
 				</div>
 				
-				<!-- password -->
 				<div class="form-group">
 					<label>Password</label>
 					<input name="userpass" type="password" class="form-control" />
@@ -158,7 +151,11 @@ $_SESSION['token'] = md5(uniqid(rand(), true));
             
 			<p class="hp">
                 <input type="text" name="ssn" id="ssn" value="">
-            </p>				
+            </p>
+            <!-- <input type="hidden" name="token" id="token" value="<?php echo md5(uniqid(rand(), true)); ?>"> -->
+                <input type="hidden" name="token" id="token" value="<?php echo md5(uniqid(rand(), true)); ?>"
+>
+
 				<!-- submit button -->
 				<div class="form-group">
 					<input name="submit" type="submit" value="Sign up" class="btn btn-primary" />
