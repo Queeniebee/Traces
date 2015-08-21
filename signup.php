@@ -5,19 +5,19 @@ include ('dblogin.php');
 session_start();
 
 $error = ['username' => '', 'email' => '', 'userpass' => '', 'hp' => '', 'token' => ''];
-$username ='';
+$username = '';
 $email = '';
 $new_member = true;
 
 // if the form has been submitted
 if ('POST' === $_SERVER['REQUEST_METHOD']) {
-	
-	$userName = isset($_POST['username']) ? $_POST['username'] : '';
+
+	$username = isset($_POST['username']) ? $_POST['username'] : '';
 	$email = isset($_POST['email']) ? $_POST['email'] : '';
 	//running PHP that is too low for password_hash();
-	$userpass = sha1($_POST['userpass']);	
-	$token = isset($_POST['token']) ? $_POST['token']: '';
-	
+	$userpass = sha1($_POST['userpass']);
+	$token = isset($_POST['token']) ? $_POST['token'] : '';
+
 	// if ($token !== $_SESSION['token']) {
 	if (!$token) {
 		$error['token'] = "Form submission is invalid.";
@@ -40,10 +40,10 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
 		$result = $check -> fetch(PDO::FETCH_ASSOC);
 		// var_dump($result);
 		$check -> execute();
-  		if(!$check->execute()) {
+		if (!$check -> execute()) {
 			echo "sql failed";
-		}		
-		
+		}
+
 		$result = $check -> fetch(PDO::FETCH_ASSOC);
 		if ($result) {
 			$error['email'] = 'An account exists with this email address';
@@ -56,9 +56,9 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
 	if ($error['email'] == '') {
 
 		if (isset($_SESSION["token"]) && isset($token)) {
-			printf('what what');
+			// printf('what what');
 			if ($token == $_SESSION["token"]) {
-				printf('nopenope');
+				// printf('nopenope');
 				$new_member = false;
 
 			}
@@ -72,7 +72,7 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
 			$check = $dbConnect -> prepare('INSERT INTO users (username, email, userpass, signupdate) VALUES (:username, :email, :userpass, NOW())');
 			$check -> execute(array(':username' => $username, ':email' => $email, ':userpass' => $userpass));
 			$userid = $dbConnect -> lastInsertId();
-			echo $userid;
+			// echo $userid;
 
 			// append user_id to session array
 			$_SESSION['user_id'] = $userid;
@@ -104,7 +104,8 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
 				border: 1px solid #ccc;
 				width: 100%;
 			}
-		</style>				
+		</style>
+						
 	</head>
 	<body>
 		
@@ -113,10 +114,8 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
 	<div class="container">
 		<div class="navbar-header">
 			<ul class="nav navbar-nav">
-				<?php
-				echo "<li><a href=\"index.php\">Sign In</a></li>";
-				echo "<li><a href=\"signup.php\">Sign Up</a></li>";
- ?>
+				<li><a href="index.php">Sign In</a></li>
+				<li><a href="signup.php">Sign Up</a></li>
 			</ul>
 		</div>
 	</div>
@@ -133,13 +132,14 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
 					<label>Username</label>
 					<!-- <input name="username" type="text" value="<?php echo $_POST['username']; ?>" class="form-control" /> -->
 					<input name="username" type="text" value="<?php echo htmlspecialchars($username, ENT_QUOTES); ?>" class="form-control" />
-					
 					<span class="text-danger"><?php echo $error['username']; ?></span>
 				</div>
 				
 				<div class="form-group">
 					<label>E-mail</label>
-					<input name="email" type="text" value="<?php echo htmlspecialchars($username, ENT_QUOTES); ?>" class="form-control" />
+					<!-- <input name="email" type="text" value="<?php echo $email; ?>" class="form-control" /> -->
+					<input name="email" type="text" value="<?php echo htmlentities($email, ENT_QUOTES); ?>" class="form-control" />
+					<!-- <input name="email" type="text" value="<?php echo htmlspecialchars($email, ENT_QUOTES); ?>" class="form-control" /> -->					
 					<span class="text-danger"><?php echo $error['email']; ?></span>
 				</div>
 				
@@ -154,7 +154,7 @@ if ('POST' === $_SERVER['REQUEST_METHOD']) {
             </p>
             <!-- <input type="hidden" name="token" id="token" value="<?php echo md5(uniqid(rand(), true)); ?>"> -->
                 <input type="hidden" name="token" id="token" value="<?php echo md5(uniqid(rand(), true)); ?>"
->
+
 
 				<!-- submit button -->
 				<div class="form-group">

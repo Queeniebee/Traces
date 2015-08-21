@@ -5,4 +5,11 @@ photos/
 database_structure.txt
 abeautifulsite/
 assets/css/fonts/
+.metadata/
+.metadata/.plugin/
+/metadata
+composer.lock
+composer.phar
+password_compat/
+vendor/
 
